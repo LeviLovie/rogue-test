@@ -6,5 +6,5 @@ mod engine;
 
 fn main() {
     println!("Booting v{};", env!("CARGO_PKG_VERSION"));
-    engine::run(320, 240, 2, 10);
+    engine::run(500, 500, 2, 10);
 }
