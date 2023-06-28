@@ -17,7 +17,11 @@ pub fn run(size_x: i32, size_y: i32, scale: i32, tps: i32) {
             _start = Instant::now();
             let mut vram = vram_mut.lock().unwrap();
             
-            vram.set_pixel(100 + _iteration as u32, 100, window::vram::Color::new(255, 0, 0, 255));
+            vram.rect(0, 0, size_x as u32, size_y as u32, window::vram::Color::new(30, 30, 30, 255));
+            vram.line(50, 0, 500, 50, window::vram::Color::new(255, 255, 255, 255));
+            vram.line(500, 50, 450, 500, window::vram::Color::new(255, 255, 255, 255));
+            vram.line(450, 500, 0, 450, window::vram::Color::new(255, 255, 255, 255));
+            vram.line(0, 450, 50, 0, window::vram::Color::new(255, 255, 255, 255));
             
             drop(vram); _iteration += 1;
             _end = Instant::now(); _elapsed = _end - _start;
