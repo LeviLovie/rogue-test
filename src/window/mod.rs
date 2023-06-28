@@ -1,4 +1,5 @@
 pub mod vram;
+pub mod shader;
 
 use gtk::prelude::*;
 use gtk::{DrawingArea, Window, WindowType};
@@ -44,8 +45,11 @@ impl Display {
         let vram_mut = Arc::clone(&self.VRAM);
 
         let scale = self.scale;
+        let size_x = self.size_x;
+        let size_y = self.size_y;
         drawing_area.connect_draw(move |_, cr| {
-            let vram = vram_mut.lock().unwrap();
+            let vram_row = vram_mut.lock().unwrap();
+            let vram = shader::process_shader_to_vram(&vram_row, size_x, size_y);
             let mut err;
             for i in 0..vram.data.len() {
                 let x = i % vram.size_x as usize;
@@ -64,7 +68,7 @@ impl Display {
                     println!("Failed to draw pixel, GTK error;");
                 }
             }
-            drop(vram);
+            drop(vram_row);
             Inhibit(false)
         });
 
