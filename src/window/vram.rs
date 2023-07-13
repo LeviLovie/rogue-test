@@ -24,6 +24,7 @@ pub struct VRAM {
     pub size_x: u32,
     pub size_y: u32,
     pub data: Vec<Color>,
+    pub redraw: bool,
 }
 impl VRAM {
     pub fn new(size_x: u32, size_y: u32) -> VRAM {
@@ -31,6 +32,15 @@ impl VRAM {
             size_x,
             size_y,
             data: vec![Color::new(0,0,0,255); (size_x * size_y) as usize],
+            redraw: true,
+        }
+    }
+    pub fn clone(&self) -> VRAM {
+        VRAM {
+            size_x: self.size_x,
+            size_y: self.size_y,
+            data: self.data.clone(),
+            redraw: true,
         }
     }
     pub fn calc_index(&self, x: u32, y: u32) -> usize {
@@ -40,11 +50,14 @@ impl VRAM {
     pub fn set_pixel(&mut self, x: u32, y: u32, color: Color) {
         if x >= self.size_x || y >= self.size_y {return;}
         let index = self.calc_index(x, y);
+        drop(index);
         self.data[index] = color;
+        self.redraw = true;
     }
     pub fn get_pixel(&self, x: u32, y: u32) -> Color {
         if x >= self.size_x || y >= self.size_y {return Color::new(0,0,0,0);}
         let index = self.calc_index(x, y);
+        drop(index);
         self.data[index]
     }
     pub fn clear(&mut self) {
@@ -90,6 +103,7 @@ impl VRAM {
                 y += sy;
             }
         }
+        drop(x); drop(y); drop(dx); drop(dy); drop(sx); drop(sy); drop(err);
     }
 }
 

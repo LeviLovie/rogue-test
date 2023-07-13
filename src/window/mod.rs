@@ -1,11 +1,13 @@
 pub mod vram;
 pub mod shader;
+pub mod sprite;
 
 use gtk::prelude::*;
 use gtk::{DrawingArea, Window, WindowType};
 use std::cell::RefCell;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::time::{Instant};
 
 thread_local!(static GLOBAL: RefCell<Option<Window>> = RefCell::new(None););
 fn check_update_display() {GLOBAL.with(|global|{if let Some(win) = &*global.borrow() {win.queue_draw();}})}
@@ -44,31 +46,24 @@ impl Display {
         window.show_all();
         let vram_mut = Arc::clone(&self.VRAM);
 
-        let scale = self.scale;
-        let size_x = self.size_x;
-        let size_y = self.size_y;
+        let scale = self.scale as usize;
+        let size_x = self.size_x as usize;
         drawing_area.connect_draw(move |_, cr| {
-            let vram_row = vram_mut.lock().unwrap();
-            let vram = shader::process_shader_to_vram(&vram_row, size_x, size_y);
-            let mut err;
-            for i in 0..vram.data.len() {
-                let x = i % vram.size_x as usize;
-                let y = i / vram.size_x as usize;
-                let color = vram.data[i];
-                let (r, g, b, a) = color.calc_gtk_color();
-                cr.set_source_rgba(r, g, b, a);
-                cr.rectangle(
-                    (x * scale as usize) as f64,
-                    (y * scale as usize) as f64,
-                    scale as f64,
-                    scale as f64,
-                );
-                err = cr.fill();
-                if err != Ok(()) {
-                    println!("Failed to draw pixel, GTK error;");
+            let mut vram = vram_mut.lock().unwrap();
+            if vram.redraw {
+                let mut _start = Instant::now();
+                for i in 0..vram.data.len() {
+                    let (r, g, b, a) = vram.data[i].calc_gtk_color(); cr.set_source_rgba(r, g, b, a);
+                    cr.rectangle(
+                        (i % size_x * scale) as f64,
+                        (i / size_x * scale) as f64,
+                        scale as f64, scale as f64,
+                    );
+                    let err = cr.fill(); if err != Ok(()) {println!("Failed to draw pixel, GTK error;");}
                 }
+                vram.redraw = false;
+                println!("WIN: {:>3}", (Instant::now() - _start).as_micros());
             }
-            drop(vram_row);
             Inhibit(false)
         });
 

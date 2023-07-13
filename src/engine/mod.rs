@@ -16,17 +16,16 @@ pub fn run(size_x: i32, size_y: i32, scale: i32, tps: i32) {
         loop {
             _start = Instant::now();
             let mut vram = vram_mut.lock().unwrap();
-            
+           
             vram.rect(0, 0, size_x as u32, size_y as u32, window::vram::Color::new(30, 30, 30, 255));
-            vram.line(50, 0, 500, 50, window::vram::Color::new(255, 255, 255, 255));
-            vram.line(500, 50, 450, 500, window::vram::Color::new(255, 255, 255, 255));
-            vram.line(450, 500, 0, 450, window::vram::Color::new(255, 255, 255, 255));
-            vram.line(0, 450, 50, 0, window::vram::Color::new(255, 255, 255, 255));
+            vram.rect(100+_iteration, 100, 100, 100, window::vram::Color::new(225, 225, 225, 255));
             
             drop(vram); _iteration += 1;
             _end = Instant::now(); _elapsed = _end - _start;
             if _elapsed < _tick_duration {std::thread::sleep(_tick_duration - _elapsed);} _last_tick = Instant::now();
+            println!("ENG: {:>3}:{:<3}ms", _elapsed.as_millis(), _tick_duration.as_millis());
         };
     });
     _main_window.run();
 }
+
